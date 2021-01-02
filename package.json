@@ -1,0 +1,13 @@
+{
+  "name": "px-monitor",
+  "version": "1.0.0",
+  "description": "Gets the current version of pX thats on specific site(s).",
+  "main": "build/index.js",
+  "repository": "https://github.com/jameskbecker/px-monitor.git",
+  "author": "James K. Becker",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "typescript": "^4.1.3"
+  }
+}
