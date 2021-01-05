@@ -1,15 +1,21 @@
 {
   "name": "px-monitor",
   "version": "1.0.0",
-  "description": "Gets the current version of pX thats on specific site(s).",
+  "description": "Monitors the current version of pX thats on specific site(s).",
   "main": "build/index.js",
-  "repository": "https://github.com/jameskbecker/px-monitor.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jameskbecker/px-monitor.git"
+  },
+  "homepage": "https://github.com/jameskbecker/px-monitor#readme",
+  "bugs": {
+    "url": "https://github.com/jameskbecker/px-monitor/issues"
+  },
   "author": "James K. Becker",
   "license": "MIT",
   "private": false,
   "scripts": {
-    "build": "rm -rf dist/ && tsc",
-    "test": "node pxdata"
+    "build": "rm -rf dist/ && tsc"
   },
   "devDependencies": {
     "typescript": "^4.1.3"

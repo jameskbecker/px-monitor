@@ -6,7 +6,7 @@ A module to monitor the current version of PerimeterX (pX) on desired site(s).
 Using npm:
 `npm i px-monitor`
 or yarn:
-`yarn add px-monitor``
+`yarn add px-monitor`
 
 ## How to Use
 ```
