@@ -1,6 +1,19 @@
-import { URL } from 'url';
 import got, { Options } from 'got';
 import { latestPx, scriptData, tags } from './types';
+
+const userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.80 Safari/537.36';
+const headers = {
+    'Accept': '*/*',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Accept-Language': 'en-GB,en;q=0.9,en-US;q=0.8,de;q=0.7',
+    'User-Agent': userAgent,
+}
+const config: Options = {
+    headers,
+    decompress: true,
+	responseType: 'text',
+	timeout: 10000,
+};
 
 /** Gets the details of the pX version currently on selected site
  * @param url of site to fetch from
@@ -22,7 +35,7 @@ export async function getLatestPx(url: string): Promise<latestPx> {
 
 /** Extracts the App ID of the PX script from HTML
  * @todo add evaluation of script where src uses vars ie: s.src = '/' + window._pxAppId.substring(2) + '/init.js';
- * @todo consider switching to babel parser ( function regex causes timeout on regex101 ) 
+ * @todo consider switching to babel
  */
 async function getScriptData(url: string): Promise<scriptData> {
     
@@ -61,20 +74,6 @@ try {
 } catch(e) {console.log(e); return {appId: '', scriptUrl: ''}}
     
 }
-
-/** Shared default configuration for different Got requests */
-const config: Options = {
-	decompress: true,
-	headers: {
-		Accept: '*/*',
-		'Accept-Encoding': 'gzip, deflate, br',
-		'Accept-Language': 'en-GB,en;q=0.9,en-US;q=0.8,de;q=0.7',
-		'User-Agent':
-			'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.80 Safari/537.36',
-	},
-	responseType: 'text',
-	timeout: 10000,
-};
 
 /** Extracts Tag Data from PX Script */
 async function getTags(appId: string): Promise<tags> {
