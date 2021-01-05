@@ -1,8 +1,12 @@
 {
   "name": "px-monitor",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Monitors the current version of pX thats on specific site(s).",
   "main": "build/index.js",
+  "keywords": [
+    "px",
+    "perimeterx"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jameskbecker/px-monitor.git"
