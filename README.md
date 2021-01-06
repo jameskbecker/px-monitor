@@ -4,9 +4,9 @@ A module to monitor the current version of PerimeterX (pX) on desired site(s).
 
 ## Installation
 Using npm:
-`npm i px-monitor`
+`npm i @jameskbecker/px-monitor`
 or yarn:
-`yarn add px-monitor`
+`yarn add @jameskbecker/px-monitor`
 
 ## How to Use
 ```

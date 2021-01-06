@@ -1,6 +1,6 @@
 {
   "name": "@jameskbecker/px-monitor",
-  "version": "1.0.0",
+  "version": "1.0.9",
   "description": "Monitors the current version of pX thats on specific site(s).",
   "main": "build/index.js",
   "keywords": [

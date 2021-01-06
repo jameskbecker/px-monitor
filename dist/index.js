@@ -68,6 +68,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getLatestPx = void 0;
 var got_1 = __importDefault(require("got"));
+var userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.80 Safari/537.36';
+var headers = {
+    'Accept': '*/*',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Accept-Language': 'en-GB,en;q=0.9,en-US;q=0.8,de;q=0.7',
+    'User-Agent': userAgent,
+};
+var config = {
+    headers: headers,
+    decompress: true,
+    responseType: 'text',
+    timeout: 10000,
+};
 /** Gets the details of the pX version currently on selected site
  * @param url of site to fetch from
  * @returns version data required for generating valid _px3 cookies
@@ -100,7 +113,7 @@ function getLatestPx(url) {
 exports.getLatestPx = getLatestPx;
 /** Extracts the App ID of the PX script from HTML
  * @todo add evaluation of script where src uses vars ie: s.src = '/' + window._pxAppId.substring(2) + '/init.js';
- * @todo consider switching to babel parser ( function regex causes timeout on regex101 )
+ * @todo consider switching to babel
  */
 function getScriptData(url) {
     return __awaiter(this, void 0, void 0, function () {
@@ -158,18 +171,6 @@ function getScriptData(url) {
         });
     });
 }
-/** Shared default configuration for different Got requests */
-var config = {
-    decompress: true,
-    headers: {
-        Accept: '*/*',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Accept-Language': 'en-GB,en;q=0.9,en-US;q=0.8,de;q=0.7',
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.80 Safari/537.36',
-    },
-    responseType: 'text',
-    timeout: 10000,
-};
 /** Extracts Tag Data from PX Script */
 function getTags(appId) {
     return __awaiter(this, void 0, void 0, function () {
