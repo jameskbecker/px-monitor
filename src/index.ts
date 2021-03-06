@@ -1,4 +1,5 @@
 import got, { Options } from 'got';
+import cheerio from 'cheerio';
 import { latestPx, scriptData, tags } from './types';
 
 const userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.80 Safari/537.36';
@@ -22,9 +23,10 @@ const config: Options = {
 export async function getLatestPx(url: string): Promise<latestPx> {
 	//url = resetPath(url);
 	try {
-		const { appId, scriptUrl } = await getScriptData(url);
-        const { tag, fTag } = await getTags(appId);
-        return { tag, fTag, appId, scriptUrl, site: url };
+		const { appId } = await getScriptData(url);
+		const scriptUrl = `https://client.px-cloud.net/${appId}/main.min.js`
+    const { tag, fTag } = await getTags(scriptUrl);
+    return { tag, fTag, appId, scriptUrl, site: url };
 	} catch (e) {
 		console.error(e);
 		console.log('Reattempting to get latest pX');
@@ -39,46 +41,49 @@ export async function getLatestPx(url: string): Promise<latestPx> {
  */
 async function getScriptData(url: string): Promise<scriptData> {
     
-try {
-	const response: any = await got.get(url, config);
-	if (!response || !response.body) {
-		throw new Error('Received Empty Response.');
-    }
-    
-    const scriptExp = /<script\b[^>]*>([\s\S\n]*?)<\/script>/g;
-    const scripts = response.body.matchAll(scriptExp);
-    let pxConfig = '';
-    for ( let [, script] of scripts) {
-        if (script.includes('_pxAppId')) {
-            pxConfig = script;
-            break;
-        }
-    }
+	try {
+		const response: any = await got.get(url, config);
+		if (!response || !response.body) {
+			throw new Error('Received Empty Response.');
+			}
+			
+			//const scriptExp = /<script (?:type="text\/javascript")?\b[^>]*>([\s\S\n]*?)<\/script>/g;
+			const $ = cheerio.load(response.body);
+			const script = $('script').filter(function(this: any) {
+				return $(this).text().includes('_pxAppId');
+			})
+			//const scripts = response.body.matchAll(scriptExp);
+			let pxConfig = script.text();
+			// for ( let [, script] of scripts) {
+			//     if (script.includes('_pxAppId')) {
+			//         pxConfig = script;
+			//         break;
+			//     }
+			// }
 
-    if (!pxConfig) {
-        throw new Error('Unable to find pX Config Script')
-    }
+			if (!pxConfig) {
+					throw new Error('Unable to find pX Config Script')
+			}
 
-    const appIdExp = /window\._pxAppId\s?=\s?['"](\w*?)['"];?/;
-	const [, appId] = pxConfig.match(appIdExp) || [];
-	if (!appId) {
-		throw new Error('Unable to find App ID.');
-	}
+			const appIdExp = /window\._pxAppId\s?=\s?['"](\w*?)['"];?/;
+		const [, appId] = pxConfig.match(appIdExp) || [];
+		if (!appId) {
+			throw new Error('Unable to find App ID.');
+		}
 
-	const scriptUrlExp = /\w{1}\.src\s?=\s?["']?(.*?)["']?;/;
-	const [, scriptUrl] = pxConfig.match(scriptUrlExp) || [];
-    if (!scriptUrl) {
-		throw new Error('Unable to find Script URL.');
-	}
-	return { appId, scriptUrl };
-} catch(e) {console.log(e); return {appId: '', scriptUrl: ''}}
+		const scriptUrlExp = /\w{1}\.src\s?=\s?["']?(.*?)["']?;/;
+		const [, scriptUrl] = pxConfig.match(scriptUrlExp) || [];
+			if (!scriptUrl) {
+			throw new Error('Unable to find Script URL.');
+		}
+		return { appId, scriptUrl };
+	} catch(e) {console.log(e); return {appId: '', scriptUrl: ''}}
     
 }
 
 /** Extracts Tag Data from PX Script */
-async function getTags(appId: string): Promise<tags> {
-    const url = `https://client.px-cloud.net/${appId}/main.min.js`;
-	const response: any = await got.get(url, config);
+async function getTags(scriptUrl: string): Promise<tags> {
+	const response: any = await got.get(scriptUrl, config);
 	const script = response.body;
 	const fTagExp = /\s?=\s?["'](\d{3})["']/;
 	const tagExp = /["'](v\d\.\d\.\d)["']/;

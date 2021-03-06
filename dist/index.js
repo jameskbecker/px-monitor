@@ -35,17 +35,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
-};
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
     if (!m) return o;
@@ -68,6 +57,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getLatestPx = void 0;
 var got_1 = __importDefault(require("got"));
+var cheerio_1 = __importDefault(require("cheerio"));
 var userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.80 Safari/537.36';
 var headers = {
     'Accept': '*/*',
@@ -87,20 +77,21 @@ var config = {
  */
 function getLatestPx(url) {
     return __awaiter(this, void 0, void 0, function () {
-        var _a, appId, scriptUrl, _b, tag, fTag, e_1;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
+        var appId, scriptUrl, _a, tag, fTag, e_1;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
-                    _c.trys.push([0, 3, , 4]);
+                    _b.trys.push([0, 3, , 4]);
                     return [4 /*yield*/, getScriptData(url)];
                 case 1:
-                    _a = _c.sent(), appId = _a.appId, scriptUrl = _a.scriptUrl;
-                    return [4 /*yield*/, getTags(appId)];
+                    appId = (_b.sent()).appId;
+                    scriptUrl = "https://client.px-cloud.net/" + appId + "/main.min.js";
+                    return [4 /*yield*/, getTags(scriptUrl)];
                 case 2:
-                    _b = _c.sent(), tag = _b.tag, fTag = _b.fTag;
+                    _a = _b.sent(), tag = _a.tag, fTag = _a.fTag;
                     return [2 /*return*/, { tag: tag, fTag: fTag, appId: appId, scriptUrl: scriptUrl, site: url }];
                 case 3:
-                    e_1 = _c.sent();
+                    e_1 = _b.sent();
                     console.error(e_1);
                     console.log('Reattempting to get latest pX');
                     //return await getLatestPx(url);
@@ -117,53 +108,44 @@ exports.getLatestPx = getLatestPx;
  */
 function getScriptData(url) {
     return __awaiter(this, void 0, void 0, function () {
-        var response, scriptExp, scripts, pxConfig, scripts_1, scripts_1_1, _a, script, appIdExp, _b, appId, scriptUrlExp, _c, scriptUrl, e_2;
-        var e_3, _d;
-        return __generator(this, function (_e) {
-            switch (_e.label) {
+        var response, $_1, script, pxConfig, appIdExp, _a, appId, scriptUrlExp, _b, scriptUrl, e_2;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
-                    _e.trys.push([0, 2, , 3]);
+                    _c.trys.push([0, 2, , 3]);
                     return [4 /*yield*/, got_1.default.get(url, config)];
                 case 1:
-                    response = _e.sent();
+                    response = _c.sent();
                     if (!response || !response.body) {
                         throw new Error('Received Empty Response.');
                     }
-                    scriptExp = /<script\b[^>]*>([\s\S\n]*?)<\/script>/g;
-                    scripts = response.body.matchAll(scriptExp);
-                    pxConfig = '';
-                    try {
-                        for (scripts_1 = __values(scripts), scripts_1_1 = scripts_1.next(); !scripts_1_1.done; scripts_1_1 = scripts_1.next()) {
-                            _a = __read(scripts_1_1.value, 2), script = _a[1];
-                            if (script.includes('_pxAppId')) {
-                                pxConfig = script;
-                                break;
-                            }
-                        }
-                    }
-                    catch (e_3_1) { e_3 = { error: e_3_1 }; }
-                    finally {
-                        try {
-                            if (scripts_1_1 && !scripts_1_1.done && (_d = scripts_1.return)) _d.call(scripts_1);
-                        }
-                        finally { if (e_3) throw e_3.error; }
-                    }
+                    $_1 = cheerio_1.default.load(response.body);
+                    script = $_1('script').filter(function () {
+                        return $_1(this).text().includes('_pxAppId');
+                    });
+                    pxConfig = script.text();
+                    // for ( let [, script] of scripts) {
+                    //     if (script.includes('_pxAppId')) {
+                    //         pxConfig = script;
+                    //         break;
+                    //     }
+                    // }
                     if (!pxConfig) {
                         throw new Error('Unable to find pX Config Script');
                     }
                     appIdExp = /window\._pxAppId\s?=\s?['"](\w*?)['"];?/;
-                    _b = __read(pxConfig.match(appIdExp) || [], 2), appId = _b[1];
+                    _a = __read(pxConfig.match(appIdExp) || [], 2), appId = _a[1];
                     if (!appId) {
                         throw new Error('Unable to find App ID.');
                     }
                     scriptUrlExp = /\w{1}\.src\s?=\s?["']?(.*?)["']?;/;
-                    _c = __read(pxConfig.match(scriptUrlExp) || [], 2), scriptUrl = _c[1];
+                    _b = __read(pxConfig.match(scriptUrlExp) || [], 2), scriptUrl = _b[1];
                     if (!scriptUrl) {
                         throw new Error('Unable to find Script URL.');
                     }
                     return [2 /*return*/, { appId: appId, scriptUrl: scriptUrl }];
                 case 2:
-                    e_2 = _e.sent();
+                    e_2 = _c.sent();
                     console.log(e_2);
                     return [2 /*return*/, { appId: '', scriptUrl: '' }];
                 case 3: return [2 /*return*/];
@@ -172,14 +154,12 @@ function getScriptData(url) {
     });
 }
 /** Extracts Tag Data from PX Script */
-function getTags(appId) {
+function getTags(scriptUrl) {
     return __awaiter(this, void 0, void 0, function () {
-        var url, response, script, fTagExp, tagExp, tagMatch, fTagMatch;
+        var response, script, fTagExp, tagExp, tagMatch, fTagMatch;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
-                    url = "https://client.px-cloud.net/" + appId + "/main.min.js";
-                    return [4 /*yield*/, got_1.default.get(url, config)];
+                case 0: return [4 /*yield*/, got_1.default.get(scriptUrl, config)];
                 case 1:
                     response = _a.sent();
                     script = response.body;
