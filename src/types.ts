@@ -13,5 +13,5 @@ export type tags = {
 
 export type scriptData = {
     appId: string;
-    scriptUrl: string;
+    scriptUrl?: string;
 }

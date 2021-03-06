@@ -108,28 +108,23 @@ exports.getLatestPx = getLatestPx;
  */
 function getScriptData(url) {
     return __awaiter(this, void 0, void 0, function () {
-        var response, $_1, script, pxConfig, appIdExp, _a, appId, scriptUrlExp, _b, scriptUrl, e_2;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
+        var response, $_1, script, pxConfig, appIdExp, _a, appId, e_2;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
-                    _c.trys.push([0, 2, , 3]);
+                    _b.trys.push([0, 2, , 3]);
                     return [4 /*yield*/, got_1.default.get(url, config)];
                 case 1:
-                    response = _c.sent();
+                    response = _b.sent();
                     if (!response || !response.body) {
                         throw new Error('Received Empty Response.');
                     }
                     $_1 = cheerio_1.default.load(response.body);
                     script = $_1('script').filter(function () {
-                        return $_1(this).text().includes('_pxAppId');
+                        var contents = $_1(this).html();
+                        return contents && contents.includes('_pxAppId') || false;
                     });
-                    pxConfig = script.text();
-                    // for ( let [, script] of scripts) {
-                    //     if (script.includes('_pxAppId')) {
-                    //         pxConfig = script;
-                    //         break;
-                    //     }
-                    // }
+                    pxConfig = $_1(script).html();
                     if (!pxConfig) {
                         throw new Error('Unable to find pX Config Script');
                     }
@@ -138,14 +133,9 @@ function getScriptData(url) {
                     if (!appId) {
                         throw new Error('Unable to find App ID.');
                     }
-                    scriptUrlExp = /\w{1}\.src\s?=\s?["']?(.*?)["']?;/;
-                    _b = __read(pxConfig.match(scriptUrlExp) || [], 2), scriptUrl = _b[1];
-                    if (!scriptUrl) {
-                        throw new Error('Unable to find Script URL.');
-                    }
-                    return [2 /*return*/, { appId: appId, scriptUrl: scriptUrl }];
+                    return [2 /*return*/, { appId: appId }];
                 case 2:
-                    e_2 = _c.sent();
+                    e_2 = _b.sent();
                     console.log(e_2);
                     return [2 /*return*/, { appId: '', scriptUrl: '' }];
                 case 3: return [2 /*return*/];

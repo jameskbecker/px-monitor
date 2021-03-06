@@ -11,5 +11,5 @@ export declare type tags = {
 };
 export declare type scriptData = {
     appId: string;
-    scriptUrl: string;
+    scriptUrl?: string;
 };

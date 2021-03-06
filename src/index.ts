@@ -20,7 +20,7 @@ const config: Options = {
  * @param url of site to fetch from
  * @returns version data required for generating valid _px3 cookies
  */
-export async function getLatestPx(url: string): Promise<latestPx> {
+export async function getLatestPx(url: string):  Promise<latestPx> {
 	//url = resetPath(url);
 	try {
 		const { appId } = await getScriptData(url);
@@ -40,43 +40,30 @@ export async function getLatestPx(url: string): Promise<latestPx> {
  * @todo consider switching to babel
  */
 async function getScriptData(url: string): Promise<scriptData> {
-    
 	try {
 		const response: any = await got.get(url, config);
 		if (!response || !response.body) {
 			throw new Error('Received Empty Response.');
 			}
 			
-			//const scriptExp = /<script (?:type="text\/javascript")?\b[^>]*>([\s\S\n]*?)<\/script>/g;
-			const $ = cheerio.load(response.body);
-			const script = $('script').filter(function(this: any) {
-				return $(this).text().includes('_pxAppId');
-			})
-			//const scripts = response.body.matchAll(scriptExp);
-			let pxConfig = script.text();
-			// for ( let [, script] of scripts) {
-			//     if (script.includes('_pxAppId')) {
-			//         pxConfig = script;
-			//         break;
-			//     }
-			// }
+const $ = cheerio.load(response.body);
+const script = $('script').filter(function(this: any) {
+	const contents = $(this).html();
+	return contents && contents.includes('_pxAppId') || false;
+})
 
-			if (!pxConfig) {
-					throw new Error('Unable to find pX Config Script')
-			}
+let pxConfig = $(script).html();
+if (!pxConfig) {
+		throw new Error('Unable to find pX Config Script')
+}
 
 			const appIdExp = /window\._pxAppId\s?=\s?['"](\w*?)['"];?/;
-		const [, appId] = pxConfig.match(appIdExp) || [];
-		if (!appId) {
-			throw new Error('Unable to find App ID.');
-		}
+			const [, appId] = (<string>pxConfig).match(appIdExp) || [];
+			if (!appId) {
+				throw new Error('Unable to find App ID.');
+			}
 
-		const scriptUrlExp = /\w{1}\.src\s?=\s?["']?(.*?)["']?;/;
-		const [, scriptUrl] = pxConfig.match(scriptUrlExp) || [];
-			if (!scriptUrl) {
-			throw new Error('Unable to find Script URL.');
-		}
-		return { appId, scriptUrl };
+		return { appId };
 	} catch(e) {console.log(e); return {appId: '', scriptUrl: ''}}
     
 }
